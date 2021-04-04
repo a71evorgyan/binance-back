@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import {
   createTokenForAlertSystem,
-  destroyAlertSystem,
-  processGetAllTreadingPaitsRequest,
+  processDestroyRequest,
   processGetAlertPullRequest,
   processGetUserBalanceRequest,
   processCreateAlertRequest,
+  processGetAllTradingPairsRequest,
 } from "../services";
 
 export const initialize = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
@@ -20,7 +20,7 @@ export const initialize = async (req: Request, res: Response, next: NextFunction
 
 export const destroy = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
   try {
-    await destroyAlertSystem(req);
+    await processDestroyRequest(req);
 
     return res.status(204);
   } catch (err) {
@@ -28,19 +28,9 @@ export const destroy = async (req: Request, res: Response, next: NextFunction): 
   }
 };
 
-export const getAllTreadingPaits = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
+export const getAllTradingPairs = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
   try {
-    const result = await processGetAllTreadingPaitsRequest(req);
-
-    return res.status(200).json(result);
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const getAlertPull = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
-  try {
-    const result = await processGetAlertPullRequest(req);
+    const result = await processGetAllTradingPairsRequest(req);
 
     return res.status(200).json(result);
   } catch (err) {
@@ -51,6 +41,16 @@ export const getAlertPull = async (req: Request, res: Response, next: NextFuncti
 export const getUserBalance = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
   try {
     const result = await processGetUserBalanceRequest(req);
+
+    return res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAlertPull = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
+  try {
+    const result = await processGetAlertPullRequest(req);
 
     return res.status(200).json(result);
   } catch (err) {

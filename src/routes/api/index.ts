@@ -1,15 +1,15 @@
 import express from "express";
 import { validationQueryMiddleware, validationBodyMiddleware } from "../../middlewares";
-import { GetInitRequest, DeleteDestroyRequest, GetAllTreadingPaitsRequest, GetUserBalanceRequest, CreateAlertRequest } from "../../requests";
-import { initialize, destroy, getAllTreadingPaits, getAlertPull, getUserBalance, createAlert } from "../../controllers";
+import { GetInitRequest, DeleteDestroyRequest, GetAllTradingPairsRequest, GetUserBalanceRequest, CreateAlertRequest } from "../../requests";
+import { initialize, destroy, getAllTradingPairs, getAlertPull, getUserBalance, createAlert } from "../../controllers";
 import { GetAlertPullRequest } from "../../requests/get-alert-pull";
 
 const router = express.Router();
 
 router.get("/init", validationQueryMiddleware(GetInitRequest), initialize);
-router.get("/alertPull", validationQueryMiddleware(GetAlertPullRequest), getAlertPull);
+router.get("/getAllTradingPairs", validationQueryMiddleware(GetAllTradingPairsRequest), getAllTradingPairs);
 router.get("/getUserBalance", validationQueryMiddleware(GetUserBalanceRequest), getUserBalance);
-router.get("/getAllTreadingPaits", validationQueryMiddleware(GetAllTreadingPaitsRequest), getAllTreadingPaits);
+router.get("/alertPull", validationQueryMiddleware(GetAlertPullRequest), getAlertPull);
 
 router.post("/createAlert", validationBodyMiddleware(CreateAlertRequest), createAlert);
 
