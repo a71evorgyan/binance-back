@@ -1,65 +1,72 @@
 import { Request } from "express";
-import { ExchangeInfo, AssetBalance } from "binance-api-node";
+import { AssetBalance } from "binance-api-node";
 import { CreateAlertRequest } from "../requests";
-import { getUserDataModel, userData } from "../models";
-import { generateToken, JWT_SECRET, decodeToken, validateBinanceAccount, getAllTreadingPairs, getUserBalance } from "../utils";
+import { getUserDataModel } from "../models";
+import { generateToken, JWT_SECRET, decodeToken, validateBinanceAccount, getAllTradingPairs, getUserBalance } from "../utils";
 
 export const createTokenForAlertSystem = async (request: Request): Promise<string> => {
   try {
     const userDataModel = getUserDataModel();
     const { key, secret } = request.query;
 
-    const existingUserData = await userDataModel.findOne({ key: key as string });
+    const existingUserData = await userDataModel.findOneAndUpdate({ key: key as string }, { enabled: true });
 
     if (existingUserData) {
-      throw new Error("User data already exists");
+      return existingUserData.token;
     }
 
     const valid = await validateBinanceAccount(key as string, secret as string);
 
-    let token: string;
     if (valid) {
-      token = generateToken({ key: key as string, secret: secret as string }, JWT_SECRET);
+      const token = generateToken({ key: key as string, secret: secret as string }, JWT_SECRET);
       await userDataModel.create({ key, token, enabled: true });
+      return token;
     }
-
-    return token;
   } catch (e) {
     console.error(`functionName: createTokenForAlertSystem - errorMessage: '${e.message}'`);
     throw e;
   }
 };
 
-export const processDestroyRequest = async (request: Request): Promise<void> => {
+export const processDestroyRequest = async (request: Request): Promise<any> => {
   try {
+    console.log({ request });
+
     const userDataModel = getUserDataModel();
 
     const { token } = request.query;
-    await userDataModel.updateOne({ token: token as string }, { enabled: false });
+    return userDataModel.updateOne({ token: token as string }, { enabled: false });
   } catch (e) {
     console.error(`functionName: destroyAlertSystem - errorMessage: '${e.message}'`);
     throw e;
   }
 };
 
-export const processGetAllTradingPairsRequest = async (request: Request): Promise<ExchangeInfo> => {
+export const processGetAllTradingPairsRequest = async (request: Request): Promise<string[]> => {
   try {
     const { token } = request.query;
     const { key, secret } = decodeToken(token as string, JWT_SECRET);
-    const treadingPairs = await getAllTreadingPairs(key, secret);
-    return treadingPairs;
+    const exchangeInfo = await getAllTradingPairs(key, secret);
+    const pairs: any = exchangeInfo.symbols.map((symbol) => {
+      return symbol.symbol;
+    });
+    return pairs;
   } catch (e) {
     console.error(`functionName: processGetAllTreadingPairs - errorMessage: '${e.message}'`);
     throw e;
   }
 };
 
-export const processGetUserBalanceRequest = async (request: Request): Promise<AssetBalance[]> => {
+export const processGetUserBalanceRequest = async (request: Request): Promise<string[]> => {
   try {
     const { token } = request.query;
     const { key, secret } = decodeToken(token as string, JWT_SECRET);
-    const userBalance = await getUserBalance(key, secret);
-    return userBalance;
+    const userBalances = await getUserBalance(key, secret);
+
+    const freeBalances = userBalances.map(({ free }) => {
+      return free;
+    });
+    return freeBalances;
   } catch (e) {
     console.error(`functionName: processGetUserBalanceRequest - errorMessage: '${e.message}'`);
     throw e;
@@ -75,7 +82,6 @@ export const processGetAlertPullRequest = async (request: Request): Promise<any>
     throw e;
   }
 };
-
 
 export const processCreateAlertRequest = async (payload: CreateAlertRequest): Promise<string> => {
   try {

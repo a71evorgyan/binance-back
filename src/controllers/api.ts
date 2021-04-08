@@ -11,8 +11,10 @@ import {
 export const initialize = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
   try {
     const token = await createTokenForAlertSystem(req);
-
-    return res.status(201).json(token);
+    if (token) {
+      return res.status(201).json(token);
+    }
+    return res.status(400);
   } catch (err) {
     next(err);
   }
@@ -20,9 +22,10 @@ export const initialize = async (req: Request, res: Response, next: NextFunction
 
 export const destroy = async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
   try {
-    await processDestroyRequest(req);
-
-    return res.status(204);
+    const response = await processDestroyRequest(req);
+    if(response.nModified) {
+      return res.status(204).json("Destroyed"); // fix this should be only status, and why latancy
+    }
   } catch (err) {
     next(err);
   }

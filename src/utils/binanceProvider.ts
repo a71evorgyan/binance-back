@@ -14,7 +14,7 @@ export const validateBinanceAccount = async (apiKey: string, apiSecret: string):
   }
 };
 
-export const getAllTreadingPairs = async (apiKey: string, apiSecret: string): Promise<ExchangeInfo> => {
+export const getAllTradingPairs = async (apiKey: string, apiSecret: string): Promise<ExchangeInfo> => {
   try {
     const binance = Binance({
       apiKey,
